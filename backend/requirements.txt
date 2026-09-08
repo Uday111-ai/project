@@ -1,0 +1,8 @@
+fastapi>=0.141.1
+uvicorn>=0.52.4
+sqlalchemy>=2.0.52
+psycopg2-binary>=2.9.12
+pydantic[email]>=2.13.5
+python-jose>=3.5.0
+argon2-cffi>=25.1.0
+python-dotenv>=1.2.3

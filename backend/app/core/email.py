@@ -43,14 +43,3 @@ AI Auth Team
         )
 
         server.send_message(message)
-
-
-if __name__ == "__main__":
-    print("Starting email test...")
-
-    send_reset_email(
-        "udaymaddheshiya14@gmail.com",
-        "http://localhost:3000/reset-password?token=test123"
-    )
-
-    print("Email function completed.")

@@ -38,6 +38,34 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
+
+class LoginResponse(BaseModel):
+    success: bool
+    message: str
+    access_token: str
+    token_type: str = "bearer"
+
+
+class MeResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+
+
+class LogoutResponse(BaseModel):
+    success: bool
+    message: str
+
+
+class DeleteAccountRequest(BaseModel):
+    password: str = Field(..., description="Current password, required to confirm deletion")
+
+
+class DeleteAccountResponse(BaseModel):
+    success: bool
+    message: str
+
+
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 

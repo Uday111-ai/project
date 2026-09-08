@@ -34,23 +34,39 @@ FastAPI backend providing signup, login, session ("me"), and password-reset
 | Method | Path               | Auth       | Description                              |
 |--------|--------------------|------------|-------------------------------------------|
 | GET    | `/`                | —          | Health check                              |
-| POST   | `/signup`          | —          | Create account                            |
+| POST   | `/signup`          | —          | Create account (`201` on success)         |
 | POST   | `/login`           | —          | Log in, returns a JWT access token        |
 | GET    | `/me`              | Bearer JWT | Get the current authenticated user        |
+| POST   | `/logout`          | Bearer JWT | Log out (invalidates the current token)   |
+| POST   | `/delete-account`  | Bearer JWT | Delete the current account                |
 | POST   | `/forgot-password` | —          | Request a password-reset email            |
 | POST   | `/reset-password`  | —          | Reset password using the emailed token    |
 
-`GET /me` and any future protected route expect `Authorization: Bearer <token>`.
+Every protected route (`/me`, `/logout`, `/delete-account`, and any future
+one) expects `Authorization: Bearer <token>`.
 
 ### Request bodies (summary)
 
 - `POST /signup`: `{ username, email, create_password, confirm_password }`
 - `POST /login`: `{ email, password }`
+- `POST /logout`: no body
+- `POST /delete-account`: `{ password }` — current password, required to confirm
 - `POST /forgot-password`: `{ email }`
 - `POST /reset-password`: `{ token, new_password, confirm_password }`
 
 Passwords must be 8+ characters, include at least one digit and one
 special character.
+
+### Notes on `/logout` and `/delete-account`
+
+- Access tokens are stateless JWTs, so there's nothing to revoke server-side
+  on its own. `/logout` invalidates the token by bumping the user's
+  `token_version` (the same mechanism already used when a password is
+  reset) — every token issued before the logout call stops working, and the
+  user must log in again to get a new one.
+- `/delete-account` requires the current password in the body as a
+  confirmation step, deletes any pending password-reset tokens for that
+  user, then deletes the user row.
 
 ## CORS
 

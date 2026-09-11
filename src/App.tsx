@@ -5,6 +5,10 @@ import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
+import ResendVerification from "./pages/ResendVerification";
 
 export default function App() {
   return (
@@ -22,7 +26,12 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          {/* ForgotPassword / ResetPassword pages come next per the plan's dev order */}
+          {/* Matches the backend's real reset-link target: FRONTEND_URL + "/forgot-password" / "/reset-password?token=..." */}
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          {/* Matches the backend's real verify-link target: FRONTEND_URL + "/verify-email?token=..." */}
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/resend-verification" element={<ResendVerification />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

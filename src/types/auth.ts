@@ -16,7 +16,10 @@ export interface SignupResponse {
 }
 
 export interface LoginPayload {
-  email: string;
+  // Backend's real LoginRequest field is `identifier` (email OR username),
+  // not `email` — confirmed against app/schemas/user.py. Keeping the field
+  // name aligned with the backend contract so this doesn't silently 422.
+  identifier: string;
   password: string;
 }
 
@@ -30,6 +33,7 @@ export interface CurrentUser {
   id: number;
   username: string;
   email: string;
+  email_verified: boolean;
 }
 
 export interface ForgotPasswordPayload {
@@ -45,6 +49,23 @@ export interface ResetPasswordPayload {
   token: string;
   new_password: string;
   confirm_password: string;
+}
+
+export interface VerifyEmailPayload {
+  token: string;
+}
+
+export interface ResendVerificationPayload {
+  email: string;
+}
+
+export interface DeleteAccountPayload {
+  password: string;
+}
+
+export interface CheckUsernameResponse {
+  available: boolean;
+  suggestions?: string[];
 }
 
 // Shape of FastAPI/Pydantic error bodies we actually need to handle.

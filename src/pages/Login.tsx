@@ -7,34 +7,36 @@ import { Button } from "../components/common/Button";
 import { AuthFormError } from "../components/auth/AuthFormError";
 import { useAuth } from "../context/AuthContext";
 
-// Login is EMAIL-ONLY — confirmed permanently with the backend team. No username field.
+// Login accepts EITHER an email or a username in one field — the backend's real
+// LoginRequest field is `identifier` (see app/schemas/user.py), not `email`.
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation() as { state?: { successMessage?: string } };
   const { login, isLoading, error, clearError } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ identifier?: string; password?: string }>({});
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     clearError();
 
-    const errors: { email?: string; password?: string } = {};
-    if (!email.trim()) errors.email = "Email is required.";
+    const errors: { identifier?: string; password?: string } = {};
+    if (!identifier.trim()) errors.identifier = "Email or username is required.";
     if (!password) errors.password = "Password is required.";
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
     try {
-      // Real call: POST /login on the real backend.
-      await login(email, password);
+      // Real call: POST /login on the real backend. Can reject with 401 (bad
+      // credentials), 403 (email not verified yet), or 423 (account locked) —
+      // AuthContext surfaces the backend's own message for each via `error`.
+      await login(identifier, password);
       navigate("/dashboard", { replace: true });
     } catch {
-      // Generic 401 message is already surfaced via AuthContext's `error` state —
-      // intentionally not distinguishing "wrong password" from "unknown email".
+      // Message is already surfaced via AuthContext's `error` state below.
     }
   }
 
@@ -47,15 +49,22 @@ export default function Login() {
       )}
       <form onSubmit={handleSubmit} noValidate>
         <AuthFormError message={error} />
+        {error?.toLowerCase().includes("verify") && (
+          <p className="-mt-2 mb-4 text-xs text-slate-500">
+            <Link to="/resend-verification" className="font-medium text-blue-600 hover:text-blue-800">
+              Resend the verification email
+            </Link>
+          </p>
+        )}
 
         <Input
-          label="Email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          errorMessage={fieldErrors.email}
+          label="Email or username"
+          name="identifier"
+          type="text"
+          autoComplete="username"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          errorMessage={fieldErrors.identifier}
           disabled={isLoading}
         />
 

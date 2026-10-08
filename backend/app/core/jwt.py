@@ -10,6 +10,13 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+if not SECRET_KEY or len(SECRET_KEY) < 32:
+    raise RuntimeError(
+        "JWT_SECRET_KEY environment variable must be set to a strong random "
+        "value (at least 32 characters) before the app can start. Generate "
+        "one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
+
 
 def create_access_token(user_id: int, token_version: int):
     expire = datetime.now(timezone.utc) + timedelta(

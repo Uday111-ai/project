@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     branch: main
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
@@ -23,6 +23,38 @@ services:
         sync: false
       - key: SMTP_PASSWORD
         sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-auth-demo-db
+          property: connectionString
+      # Schema is now owned by Alembic (`alembic upgrade head`, above) —
+      # disable the app's own Base.metadata.create_all() fallback so the
+      # two mechanisms can't disagree in production.
+      - key: DB_AUTO_CREATE_TABLES
+        value: "false"
+      - key: REQUIRE_EMAIL_VERIFICATION
+        value: "true"
+      # Off by default — opt in per-environment. See README.
+      - key: CHECK_PASSWORD_PWNED
+        value: "false"
+      - key: ACCOUNT_LOCKOUT_MAX_ATTEMPTS
+        value: "5"
+      - key: ACCOUNT_LOCKOUT_DURATION_MINUTES
+        value: "15"
+
+  # Scheduled cleanup of expired/used password-reset and email-verification
+  # tokens (fixes: these tables grew unbounded before). Runs daily.
+  - type: cron
+    name: ai-auth-demo-token-cleanup
+    runtime: python
+    plan: free
+    branch: main
+    schedule: "0 3 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/cleanup_expired_tokens.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.0
       - key: DATABASE_URL
         fromDatabase:
           name: ai-auth-demo-db

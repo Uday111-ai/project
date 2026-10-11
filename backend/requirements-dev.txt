@@ -1,0 +1,4 @@
+# Dev-only dependencies for running the test suite locally / in CI.
+# Not needed in production — not referenced by render.yaml.
+-r requirements.txt
+pytest>=8.0.0
